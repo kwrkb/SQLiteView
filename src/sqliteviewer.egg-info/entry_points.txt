@@ -1,0 +1,2 @@
+[console_scripts]
+sqliteviewer = sqliteviewer.__main__:main

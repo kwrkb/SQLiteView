@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sqliteviewer"
+version = "0.1.0"
+description = "PyQt6-based SQLite viewer for Ubuntu"
+readme = "README.md"
+authors = [
+  { name = "SQLite Viewer Team", email = "dev@example.com" }
+]
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+keywords = ["sqlite", "viewer", "pyqt6", "ubuntu"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: POSIX :: Linux",
+  "Environment :: X11 Applications :: Qt",
+  "Topic :: Database"
+]
+dependencies = [
+  "PyQt6>=6.6"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4",
+  "pytest-qt>=4.2",
+  "python-dotenv>=1.0",
+  "build>=1.0.3"
+]
+
+[project.urls]
+Homepage = "https://example.com/sqliteviewer"
+Repository = "https://example.com/sqliteviewer/repo"
+
+[project.scripts]
+sqliteviewer = "sqliteviewer.__main__:main"
+
+[tool.setuptools.package-data]
+"sqliteviewer" = [
+  "resources/icon.png",
+  "resources/sqliteviewer.desktop"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["src"]

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=SQLite Viewer
+Comment=Browse and query SQLite databases
+Exec=sqliteviewer %f
+Icon=sqliteviewer
+Terminal=false
+Type=Application
+Categories=Utility;Development;
+MimeType=application/vnd.sqlite3;application/x-sqlite3;
