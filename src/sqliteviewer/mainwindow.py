@@ -296,6 +296,8 @@ class MainWindow(QMainWindow):
     def _load_recent_files(self) -> None:
         files = self.settings.value("recent_files", [], type=list)
         self._recent_files = [f for f in files if Path(f).exists()]
+        if len(self._recent_files) != len(files):
+            self.settings.setValue("recent_files", self._recent_files)
         self._update_recent_menu()
 
     def _remember_recent_file(self, path: str) -> None:

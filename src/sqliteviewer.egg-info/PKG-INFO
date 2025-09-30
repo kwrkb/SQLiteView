@@ -47,6 +47,8 @@ Requires-Dist: build>=1.0.3; extra == "dev"
 Dynamic: license-file
 
 # SQLite Viewer for Ubuntu
+⚠️ This repository is an experimental project using AI tools such as Codex.
+It is shared for educational purposes only. Please note that it is provided *as is*, without warranty or official support.
 
 A lightweight PyQt6 desktop SQLite database viewer targeting Ubuntu desktops. The app lets you inspect tables, run ad-hoc queries, and export results—packaged for distribution via Python wheels or Debian packages.
 
@@ -78,6 +80,9 @@ source .venv/bin/activate
 pip install --upgrade pip
 pip install -e ".[dev]"
 ```
+Keep the extras in quotes (the `".[dev]"` part) so shells like `zsh` don't treat it as a glob pattern.
+
+If you prefer `uv`, install it beforehand (for example `pip install uv`) and then run `uv pip install -e ".[dev]"` inside the virtual environment.
 
 Launch the viewer:
 

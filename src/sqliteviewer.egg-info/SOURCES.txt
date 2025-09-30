@@ -21,3 +21,4 @@ src/sqliteviewer/resources/__init__.py
 src/sqliteviewer/resources/icon.png
 src/sqliteviewer/resources/sqliteviewer.desktop
 tests/test_database.py
+tests/test_mainwindow.py
