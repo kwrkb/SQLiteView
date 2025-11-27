@@ -46,7 +46,7 @@ uv run sqliteview
 
 ```bash
 # GitHubから直接インストール（最も手軽 - クローン不要）
-uv tool install git+https://github.com/yugosasaki/SQLiteView.git
+uv tool install git+https://github.com/kwrkb/SQLiteView.git
 
 # またはローカルディレクトリからインストール
 uv tool install .

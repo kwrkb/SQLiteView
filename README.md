@@ -46,7 +46,7 @@ Install the tool globally to use it from anywhere:
 
 ```bash
 # Install from GitHub (easiest - no need to clone)
-uv tool install git+https://github.com/yugosasaki/SQLiteView.git
+uv tool install git+https://github.com/kwrkb/SQLiteView.git
 
 # Or install from local directory
 uv tool install .
