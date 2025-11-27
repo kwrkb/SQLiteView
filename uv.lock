@@ -201,8 +201,8 @@ wheels = [
 ]
 
 [[package]]
-name = "sqliteviewer"
-version = "0.1.0"
+name = "sqliteview"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "pyqt6" },

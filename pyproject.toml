@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "sqliteviewer"
-version = "0.2.0"
+name = "sqliteview"
+version = "0.2.1"
 description = "PyQt6-based SQLite database browser for Ubuntu"
 readme = "README.md"
 authors = [
