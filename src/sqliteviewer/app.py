@@ -18,8 +18,8 @@ def run(initial_path: Optional[str] = None) -> int:
     owns_app = False
     if app is None:
         app = QApplication(sys.argv)
-        app.setApplicationName("SQLite Viewer")
-        app.setOrganizationName("SQLiteViewer")
+        app.setApplicationName("SQLite View")
+        app.setOrganizationName("SQLiteView")
         app.setOrganizationDomain("example.com")
         owns_app = True
 

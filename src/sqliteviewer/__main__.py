@@ -11,12 +11,12 @@ from .app import run
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="SQLite Viewer application")
+    parser = argparse.ArgumentParser(description="SQLite View application")
     parser.add_argument("database", nargs="?", help="Path to a SQLite database to open")
     parser.add_argument(
         "--version",
         action="version",
-        version=f"SQLite Viewer {__version__}",
+        version=f"SQLite View {__version__}",
     )
     return parser
 

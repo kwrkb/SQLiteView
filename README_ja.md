@@ -23,6 +23,40 @@ sudo apt-get install -y libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-k
 
 ## はじめに
 
+### 方法1: uv を使う（推奨）
+
+このプロジェクトは高速なPythonパッケージマネージャー [uv](https://github.com/astral-sh/uv) で動作するように設定されています。
+
+#### 開発環境のセットアップ
+
+```bash
+# 依存関係をインストール（自動的に .venv が作成されます）
+uv sync --dev
+
+# アプリケーションをローカルで実行
+uv run sqliteview /path/to/database.sqlite
+
+# または引数なしで実行してデータベースを選択
+uv run sqliteview
+```
+
+#### グローバルインストール
+
+ツールをグローバルにインストールして、どこからでも使用できるようにします:
+
+```bash
+# GitHubから直接インストール（最も手軽 - クローン不要）
+uv tool install git+https://github.com/yugosasaki/SQLiteView.git
+
+# またはローカルディレクトリからインストール
+uv tool install .
+
+# これでどこからでも実行可能
+sqliteview /path/to/database.sqlite
+```
+
+### 方法2: 従来の pip を使う方法
+
 ```bash
 # 仮想環境の作成と有効化
 python3 -m venv .venv
@@ -31,16 +65,9 @@ source .venv/bin/activate
 # 開発用追加機能と共に編集可能モードでインストール
 pip install --upgrade pip
 pip install -e ".[dev]"
-```
 
-`zsh` などでは `".[dev]"` 部分をクォートしておくと、グロブ展開されずに extras 指定がそのまま渡せます。
-
-`uv` を利用する場合は、事前に（例: `pip install uv`）インストールした上で、仮想環境内で `uv pip install -e ".[dev]"` を実行してください。
-
-ビューアの起動:
-
-```bash
-sqliteviewer /path/to/database.sqlite
+# ビューアの起動
+sqliteview /path/to/database.sqlite
 ```
 
 ## テストの実行

@@ -23,23 +23,51 @@ sudo apt-get install -y libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-k
 
 ## Getting Started
 
+### Option 1: Using uv (Recommended)
+
+This project is set up to work with [uv](https://github.com/astral-sh/uv), a fast Python package manager.
+
+#### Development Setup
+
 ```bash
-# create & activate a virtual environment
+# Install dependencies (creates .venv automatically)
+uv sync --dev
+
+# Run the application locally
+uv run sqliteview /path/to/database.sqlite
+
+# Or run without arguments to browse for a database
+uv run sqliteview
+```
+
+#### Global Installation
+
+Install the tool globally to use it from anywhere:
+
+```bash
+# Install from GitHub (easiest - no need to clone)
+uv tool install git+https://github.com/yugosasaki/SQLiteView.git
+
+# Or install from local directory
+uv tool install .
+
+# Now you can run it from anywhere
+sqliteview /path/to/database.sqlite
+```
+
+### Option 2: Traditional pip Method
+
+```bash
+# Create & activate a virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 
-# install in editable mode with dev extras
+# Install in editable mode with dev extras
 pip install --upgrade pip
 pip install -e ".[dev]"
-```
-Keep the extras in quotes (the `".[dev]"` part) so shells like `zsh` don't treat it as a glob pattern.
 
-If you prefer `uv`, install it beforehand (for example `pip install uv`) and then run `uv pip install -e ".[dev]"` inside the virtual environment.
-
-Launch the viewer:
-
-```bash
-sqliteviewer /path/to/database.sqlite
+# Launch the viewer
+sqliteview /path/to/database.sqlite
 ```
 
 ## Running Tests
