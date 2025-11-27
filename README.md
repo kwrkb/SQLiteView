@@ -1,8 +1,8 @@
-# SQLite Viewer for Ubuntu
-⚠️ This repository is an experimental project using AI tools such as Codex.  
+# SQLite View
+⚠️ This repository is an experimental project using AI tools such as Codex.
 It is shared for educational purposes only. Please note that it is provided *as is*, without warranty or official support.
 
-A lightweight PyQt6 desktop SQLite database viewer targeting Ubuntu desktops. The app lets you inspect tables, run ad-hoc queries, and export results—packaged for distribution via Python wheels or Debian packages.
+A lightweight, cross-platform PyQt6 desktop SQLite database viewer. The app lets you inspect tables, run ad-hoc queries, and export results—packaged for distribution via Python wheels or Debian packages.
 
 ## Features
 
@@ -12,14 +12,30 @@ A lightweight PyQt6 desktop SQLite database viewer targeting Ubuntu desktops. Th
 - Persistent recent files list for quick access
 - Debian package builder for Ubuntu (Python-dependent bundle)
 
+## Tested Platforms
+
+- ✅ **Windows** - Confirmed working
+- ✅ **Ubuntu/Linux** - Primary development platform
+- ⏳ **macOS** - Not yet tested (feedback welcome!)
+
 ## Prerequisites
 
-This application requires the following system libraries to be installed on Ubuntu:
+### Ubuntu/Linux
+
+The following system libraries are required:
 
 ```bash
 sudo apt-get update
 sudo apt-get install -y libxcb-cursor0 libxkbcommon-x11-0 libxcb-icccm4 libxcb-keysyms1 libxcb-xkb1
 ```
+
+### Windows
+
+No additional system libraries required. PyQt6 bundles all necessary dependencies.
+
+### macOS
+
+No additional system libraries required (not yet tested).
 
 ## Getting Started
 

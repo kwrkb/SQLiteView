@@ -5,19 +5,24 @@ build-backend = "hatchling.build"
 [project]
 name = "sqliteview"
 version = "0.2.1"
-description = "PyQt6-based SQLite database browser for Ubuntu"
+description = "Cross-platform PyQt6-based SQLite database browser"
 readme = "README.md"
 authors = [
   { name = "SQLite Viewer Team", email = "dev@example.com" }
 ]
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
-keywords = ["sqlite", "viewer", "pyqt6", "ubuntu"]
+keywords = ["sqlite", "viewer", "pyqt6", "cross-platform", "database", "gui"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
+  "Operating System :: MacOS",
   "Environment :: X11 Applications :: Qt",
   "Topic :: Database"
 ]
