@@ -1,16 +1,21 @@
-"""Database access layer for the SQLite viewer."""
+"""Database access layer for SQLite database interactions."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence
+from typing import Iterable, List, Optional, Sequence, Tuple
 
 import sqlite3
 
 
 DEFAULT_ROW_LIMIT = 200
 QUERY_ROW_LIMIT = 1000
+
+_READ_KEYWORDS = {"SELECT", "WITH", "PRAGMA", "EXPLAIN"}
+_DML_KEYWORDS = {"INSERT", "UPDATE", "DELETE", "REPLACE"}
+_DDL_KEYWORDS = {"CREATE", "ALTER", "DROP"}
+_TCL_KEYWORDS = {"BEGIN", "COMMIT", "ROLLBACK", "SAVEPOINT", "RELEASE"}
 
 
 class DatabaseError(RuntimeError):
@@ -25,10 +30,12 @@ class QueryResult:
     rows: List[Sequence[object]]
     truncated: bool = False
     row_count: Optional[int] = None
+    affected_rows: Optional[int] = None
+    is_write_operation: bool = False
 
 
 class DatabaseService:
-    """High-level helper for read-only SQLite interactions."""
+    """High-level helper for SQLite database interactions."""
 
     def __init__(self) -> None:
         self._connection: Optional[sqlite3.Connection] = None
@@ -107,25 +114,66 @@ class DatabaseService:
         return rows[0][0]
 
     def execute_query(self, sql: str, limit: int = QUERY_ROW_LIMIT) -> QueryResult:
-        """Execute a read-only SQL query and return results."""
+        """Execute a SQL statement and return results."""
 
         self._ensure_connection()
         sql = sql.strip()
         if not sql:
             raise DatabaseError("Query is empty.")
 
-        self._assert_read_only(sql)
-
         try:
             cursor = self._connection.execute(sql)
-            columns = [description[0] for description in cursor.description or []]
-            rows = cursor.fetchmany(limit + 1)
         except sqlite3.Error as exc:
             raise DatabaseError(f"Failed to execute query: {exc}") from exc
 
+        if cursor.description is None:
+            # Write operation (INSERT/UPDATE/DELETE/DDL/TCL)
+            affected = cursor.rowcount if cursor.rowcount >= 0 else None
+            return QueryResult(
+                columns=[],
+                rows=[],
+                affected_rows=affected,
+                is_write_operation=True,
+            )
+
+        columns = [description[0] for description in cursor.description]
+        rows = cursor.fetchmany(limit + 1)
         truncated = len(rows) > limit
         trimmed_rows = [tuple(row) for row in rows[:limit]]
         return QueryResult(columns=columns, rows=trimmed_rows, truncated=truncated)
+
+    def _classify_query(self, sql: str) -> str:
+        """Classify a SQL statement as read/dml/ddl/tcl/unknown."""
+
+        keyword = self._extract_first_keyword(sql)
+        if keyword is None:
+            return "unknown"
+        if keyword in _READ_KEYWORDS:
+            return "read"
+        if keyword in _DML_KEYWORDS:
+            return "dml"
+        if keyword in _DDL_KEYWORDS:
+            return "ddl"
+        if keyword in _TCL_KEYWORDS:
+            return "tcl"
+        return "unknown"
+
+    def is_destructive_query(self, sql: str) -> Tuple[bool, str]:
+        """Detect potentially destructive queries.
+
+        Returns (is_destructive, reason). Checks for:
+        - DROP statements
+        - DELETE without a WHERE clause
+        """
+
+        keyword = self._extract_first_keyword(sql)
+        if keyword == "DROP":
+            return True, "This will permanently drop the object."
+        if keyword == "DELETE":
+            upper = sql.upper()
+            if "WHERE" not in upper:
+                return True, "DELETE without WHERE will remove all rows."
+        return False, ""
 
     def _get_table_row_count(self, table_name: str) -> Optional[int]:
         """Return row count for table; failure returns None."""
@@ -155,13 +203,6 @@ class DatabaseService:
         if not identifier:
             raise DatabaseError("Identifier cannot be empty.")
         return '"' + identifier.replace('"', '""') + '"'
-
-    def _assert_read_only(self, sql: str) -> None:
-        keyword = self._extract_first_keyword(sql)
-        if keyword is None:
-            raise DatabaseError("Unable to determine query type.")
-        if keyword not in {"SELECT", "WITH", "PRAGMA"}:
-            raise DatabaseError("Only read-only queries (SELECT/WITH/PRAGMA) are allowed.")
 
     def _extract_first_keyword(self, sql: str) -> Optional[str]:
         index = 0

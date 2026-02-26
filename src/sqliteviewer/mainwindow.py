@@ -63,7 +63,7 @@ class MainWindow(QMainWindow):
         self.schema_view.setLineWrapMode(QTextEdit.LineWrapMode.NoWrap)
 
         self.query_editor = QPlainTextEdit()
-        self.query_editor.setPlaceholderText("Write a read-only SQL query…")
+        self.query_editor.setPlaceholderText("Write a SQL statement…")
         self.query_editor.setTabStopDistance(4 * self.query_editor.fontMetrics().horizontalAdvance(' '))
         SqlHighlighter(self.query_editor.document())
 
@@ -182,6 +182,10 @@ class MainWindow(QMainWindow):
         self._remember_recent_file(path)
 
     def _refresh_tables(self) -> None:
+        # Remember currently selected table before clearing
+        selected_items = self.table_list.selectedItems()
+        previously_selected = selected_items[0].text() if selected_items else None
+
         self.table_list.clear()
 
         try:
@@ -197,7 +201,12 @@ class MainWindow(QMainWindow):
         for table in tables:
             QListWidgetItem(table, self.table_list)
 
-        self.table_list.setCurrentRow(0)
+        # Restore selection if the table still exists, otherwise select first row
+        if previously_selected and previously_selected in tables:
+            idx = tables.index(previously_selected)
+            self.table_list.setCurrentRow(idx)
+        else:
+            self.table_list.setCurrentRow(0)
 
     def _close_database(self) -> None:
         self.database_service.close()
@@ -251,19 +260,63 @@ class MainWindow(QMainWindow):
 
     def _run_query(self) -> None:
         query = self.query_editor.toPlainText()
+
+        is_destructive, reason = self.database_service.is_destructive_query(query)
+        if is_destructive:
+            reply = QMessageBox.warning(
+                self,
+                "Potentially destructive operation",
+                f"{reason}\n\nDo you want to proceed?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+
         try:
             result = self.database_service.execute_query(query)
         except DatabaseError as exc:
             QMessageBox.critical(self, "Query failed", str(exc))
             return
 
-        self.query_result = result
-        self._populate_table(self.query_result_view, result)
-        status = f"Returned {len(result.rows)} row(s)"
-        if result.truncated:
-            status += " (truncated)"
-        self.query_status_label.setText(status)
-        self.status_bar.showMessage("Query executed successfully.", 4000)
+        if result.is_write_operation:
+            self.query_result_view.setModel(None)
+            if result.affected_rows is not None:
+                status = f"{result.affected_rows} row(s) affected"
+            else:
+                status = "Statement executed successfully"
+            self.query_status_label.setText(status)
+            self.status_bar.showMessage("Statement executed successfully.", 4000)
+            self._refresh_after_write(query)
+        else:
+            self.query_result = result
+            self._populate_table(self.query_result_view, result)
+            status = f"Returned {len(result.rows)} row(s)"
+            if result.truncated:
+                status += " (truncated)"
+            self.query_status_label.setText(status)
+            self.status_bar.showMessage("Query executed successfully.", 4000)
+
+    def _refresh_after_write(self, sql: str) -> None:
+        """Refresh UI panels after a write operation."""
+
+        query_type = self.database_service._classify_query(sql)
+
+        if query_type == "ddl":
+            # Table list may have changed; also refresh preview and schema
+            self._refresh_tables()
+            selected_items = self.table_list.selectedItems()
+            if selected_items:
+                table_name = selected_items[0].text()
+                self._load_table_preview(table_name)
+                self._load_table_schema(table_name)
+        elif query_type == "dml":
+            # Refresh preview only if the affected table is currently selected
+            selected_items = self.table_list.selectedItems()
+            if selected_items:
+                table_name = selected_items[0].text()
+                if table_name.lower() in sql.lower():
+                    self._load_table_preview(table_name)
 
     def _export_results(self) -> None:
         if not self.query_result or not self.query_result.columns:
@@ -289,8 +342,8 @@ class MainWindow(QMainWindow):
         QMessageBox.about(
             self,
             "About SQLite Viewer",
-            "<b>SQLite Viewer</b><br/>Version 0.1.0<br/><br/>"
-            "A lightweight desktop viewer for SQLite databases.",
+            "<b>SQLite Viewer</b><br/>Version 0.2.1<br/><br/>"
+            "A lightweight desktop client for SQLite databases.",
         )
 
     def _load_recent_files(self) -> None:
