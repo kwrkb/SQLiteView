@@ -58,7 +58,7 @@ SQLiteViewは現在、読み取り専用のSQLiteビューア（SELECT/WITH/PRAG
 
 ```bash
 # ユニットテスト実行
-cd /home/yugosasaki/code/SQLiteView && uv run python -m pytest tests/ -v
+uv run python -m pytest tests/ -v
 
 # 手動テスト（GUIが使える場合）
 uv run sqliteview test.db

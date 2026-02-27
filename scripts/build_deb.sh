@@ -4,8 +4,8 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 BUILD_DIR="$DIST_DIR/deb_build"
-PACKAGE="sqliteviewer"
-VERSION="0.1.0"
+PACKAGE="sqliteview"
+VERSION="0.2.1"
 ARCH="all"
 
 rm -rf "$BUILD_DIR"
@@ -38,27 +38,27 @@ with zipfile.ZipFile(wheel, 'r') as archive:
     archive.extractall(destination)
 PY
 
-cat <<'EOF_CONTROL' > "$BUILD_DIR/DEBIAN/control"
-Package: sqliteviewer
-Version: 0.1.0
+cat <<EOF_CONTROL > "$BUILD_DIR/DEBIAN/control"
+Package: $PACKAGE
+Version: $VERSION
 Section: utils
 Priority: optional
 Architecture: all
 Maintainer: SQLite Viewer Team <dev@example.com>
 Depends: python3 (>= 3.10)
-Description: PyQt6-based SQLite database viewer for Ubuntu.
- SQLite viewer provides a desktop UI for browsing tables, running
+Description: PyQt6-based SQLite database client for Ubuntu.
+ SQLiteView provides a desktop UI for browsing tables, running
  ad-hoc queries, and exporting results. Packaged with its Python
  dependencies.
 EOF_CONTROL
 
-cat <<'EOF_EXEC' > "$BUILD_DIR/usr/bin/sqliteviewer"
+cat <<EOF_EXEC > "$BUILD_DIR/usr/bin/$PACKAGE"
 #!/usr/bin/env bash
 set -euo pipefail
-SCRIPT_DIR="/usr/lib/sqliteviewer"
-exec python3 "$SCRIPT_DIR/sqliteviewer/__main__.py" "$@"
+SCRIPT_DIR="/usr/lib/$PACKAGE"
+exec python3 "\$SCRIPT_DIR/sqliteviewer/__main__.py" "\$@"
 EOF_EXEC
-chmod +x "$BUILD_DIR/usr/bin/sqliteviewer"
+chmod +x "$BUILD_DIR/usr/bin/$PACKAGE"
 
 install -m 644 "$ROOT_DIR/src/sqliteviewer/resources/sqliteviewer.desktop" "$BUILD_DIR/usr/share/applications/sqliteviewer.desktop"
 install -m 644 "$ROOT_DIR/src/sqliteviewer/resources/icon.png" "$BUILD_DIR/usr/share/icons/hicolor/256x256/apps/sqliteviewer.png"

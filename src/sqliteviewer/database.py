@@ -142,7 +142,7 @@ class DatabaseService:
         trimmed_rows = [tuple(row) for row in rows[:limit]]
         return QueryResult(columns=columns, rows=trimmed_rows, truncated=truncated)
 
-    def _classify_query(self, sql: str) -> str:
+    def classify_query(self, sql: str) -> str:
         """Classify a SQL statement as read/dml/ddl/tcl/unknown."""
 
         keyword = self._extract_first_keyword(sql)
@@ -170,10 +170,41 @@ class DatabaseService:
         if keyword == "DROP":
             return True, "This will permanently drop the object."
         if keyword == "DELETE":
-            upper = sql.upper()
-            if "WHERE" not in upper:
+            stripped = self._strip_sql_comments(sql).upper()
+            if "WHERE" not in stripped:
                 return True, "DELETE without WHERE will remove all rows."
         return False, ""
+
+    def _strip_sql_comments(self, sql: str) -> str:
+        """Remove SQL comments (-- and /* */) from a statement."""
+
+        result = []
+        i = 0
+        length = len(sql)
+        while i < length:
+            if sql[i] == '-' and i + 1 < length and sql[i + 1] == '-':
+                newline = sql.find('\n', i + 2)
+                i = length if newline == -1 else newline + 1
+            elif sql[i] == '/' and i + 1 < length and sql[i + 1] == '*':
+                end = sql.find('*/', i + 2)
+                i = length if end == -1 else end + 2
+            elif sql[i] == "'":
+                result.append(sql[i])
+                i += 1
+                while i < length:
+                    result.append(sql[i])
+                    if sql[i] == "'" and (i + 1 >= length or sql[i + 1] != "'"):
+                        i += 1
+                        break
+                    if sql[i] == "'" and i + 1 < length and sql[i + 1] == "'":
+                        result.append(sql[i + 1])
+                        i += 2
+                    else:
+                        i += 1
+            else:
+                result.append(sql[i])
+                i += 1
+        return ''.join(result)
 
     def _get_table_row_count(self, table_name: str) -> Optional[int]:
         """Return row count for table; failure returns None."""

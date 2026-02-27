@@ -280,6 +280,7 @@ class MainWindow(QMainWindow):
             return
 
         if result.is_write_operation:
+            self.query_result = None
             self.query_result_view.setModel(None)
             if result.affected_rows is not None:
                 status = f"{result.affected_rows} row(s) affected"
@@ -300,7 +301,7 @@ class MainWindow(QMainWindow):
     def _refresh_after_write(self, sql: str) -> None:
         """Refresh UI panels after a write operation."""
 
-        query_type = self.database_service._classify_query(sql)
+        query_type = self.database_service.classify_query(sql)
 
         if query_type == "ddl":
             # Table list may have changed; also refresh preview and schema
