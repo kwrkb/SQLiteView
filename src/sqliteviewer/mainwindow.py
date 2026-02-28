@@ -32,7 +32,7 @@ from PyQt6.QtWidgets import (
 from .database import DatabaseError, DatabaseService, QueryResult
 from .resources import load_icon
 from .sql_highlighter import SqlHighlighter
-from .theme import Theme, apply_theme, load_theme_preference, save_theme_preference
+from .theme import SETTINGS_GROUP, Theme, apply_theme, load_theme_preference, save_theme_preference
 
 
 MAX_RECENT_FILES = 5
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(load_icon())
 
         self.database_service = DatabaseService()
-        self.settings = QSettings("SQLiteViewer", "App")
+        self.settings = QSettings(*SETTINGS_GROUP)
         self.query_result: Optional[QueryResult] = None
         self.current_theme = load_theme_preference()
 

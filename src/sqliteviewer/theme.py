@@ -17,7 +17,7 @@ class Theme(str, Enum):
     DARK = "dark"
 
 
-_SETTINGS_GROUP = ("SQLiteViewer", "App")
+SETTINGS_GROUP = ("SQLiteViewer", "App")
 _THEME_KEY = "theme"
 
 
@@ -44,14 +44,14 @@ def apply_theme(theme: Theme, app: QApplication | None = None) -> Theme:
 def save_theme_preference(theme: Theme) -> None:
     """Persist the theme preference."""
 
-    settings = QSettings(*_SETTINGS_GROUP)
+    settings = QSettings(*SETTINGS_GROUP)
     settings.setValue(_THEME_KEY, theme.value)
 
 
 def load_theme_preference() -> Theme:
     """Load the persisted theme preference."""
 
-    settings = QSettings(*_SETTINGS_GROUP)
+    settings = QSettings(*SETTINGS_GROUP)
     stored_theme = settings.value(_THEME_KEY, Theme.LIGHT.value, type=str)
     try:
         return Theme(stored_theme)
