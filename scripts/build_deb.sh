@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 BUILD_DIR="$DIST_DIR/deb_build"
 PACKAGE="sqliteview"
-VERSION="0.2.1"
+VERSION=$(grep -m1 '^version' "$ROOT_DIR/pyproject.toml" | sed 's/.*"\(.*\)"/\1/')
 ARCH="all"
 
 rm -rf "$BUILD_DIR"
@@ -45,7 +45,7 @@ Section: utils
 Priority: optional
 Architecture: all
 Maintainer: SQLite Viewer Team <dev@example.com>
-Depends: python3 (>= 3.10)
+Depends: python3 (>= 3.10), python3-pyqt6
 Description: PyQt6-based SQLite database client for Ubuntu.
  SQLiteView provides a desktop UI for browsing tables, running
  ad-hoc queries, and exporting results. Packaged with its Python
@@ -55,8 +55,8 @@ EOF_CONTROL
 cat <<EOF_EXEC > "$BUILD_DIR/usr/bin/$PACKAGE"
 #!/usr/bin/env bash
 set -euo pipefail
-SCRIPT_DIR="/usr/lib/$PACKAGE"
-exec python3 "\$SCRIPT_DIR/sqliteviewer/__main__.py" "\$@"
+export PYTHONPATH="/usr/lib/$PACKAGE"
+exec python3 -m sqliteviewer "\$@"
 EOF_EXEC
 chmod +x "$BUILD_DIR/usr/bin/$PACKAGE"
 

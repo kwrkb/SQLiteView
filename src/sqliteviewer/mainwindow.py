@@ -312,12 +312,10 @@ class MainWindow(QMainWindow):
                 self._load_table_preview(table_name)
                 self._load_table_schema(table_name)
         elif query_type == "dml":
-            # Refresh preview only if the affected table is currently selected
             selected_items = self.table_list.selectedItems()
             if selected_items:
                 table_name = selected_items[0].text()
-                if table_name.lower() in sql.lower():
-                    self._load_table_preview(table_name)
+                self._load_table_preview(table_name)
 
     def _export_results(self) -> None:
         if not self.query_result or not self.query_result.columns:

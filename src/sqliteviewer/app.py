@@ -20,7 +20,6 @@ def run(initial_path: Optional[str] = None) -> int:
         app = QApplication(sys.argv)
         app.setApplicationName("SQLite View")
         app.setOrganizationName("SQLiteView")
-        app.setOrganizationDomain("example.com")
         owns_app = True
 
     window = MainWindow()

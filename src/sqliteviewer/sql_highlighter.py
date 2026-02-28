@@ -126,15 +126,12 @@ class SqlHighlighter(QSyntaxHighlighter):
         self.string_expression = QRegularExpression(r"'([^']|'')*'")
         self.number_expression = QRegularExpression(r"\b\d+(\.\d+)?\b")
 
-        self.keyword_patterns = []
-        for keyword in self.KEYWORDS:
-            pattern = QRegularExpression(rf"\b{keyword}\b")
-            pattern.setPatternOptions(QRegularExpression.PatternOption.CaseInsensitiveOption)
-            self.keyword_patterns.append(pattern)
+        pattern_str = r"\b(" + "|".join(self.KEYWORDS) + r")\b"
+        self.keyword_pattern = QRegularExpression(pattern_str)
+        self.keyword_pattern.setPatternOptions(QRegularExpression.PatternOption.CaseInsensitiveOption)
 
     def highlightBlock(self, text: str) -> None:  # noqa: N802 (Qt API signature)
-        for pattern in self.keyword_patterns:
-            self._apply_regex(pattern, text, self.keyword_format)
+        self._apply_regex(self.keyword_pattern, text, self.keyword_format)
         self._apply_regex(self.comment_expression, text, self.comment_format)
         self._apply_regex(self.string_expression, text, self.string_format)
         self._apply_regex(self.number_expression, text, self.number_format)

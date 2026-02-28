@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-exec python3 "$ROOT_DIR/src/sqliteviewer/__main__.py" "$@"
+export PYTHONPATH="$ROOT_DIR/src"
+exec python3 -m sqliteviewer "$@"
