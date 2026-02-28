@@ -5,9 +5,26 @@ from __future__ import annotations
 from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtGui import QColor, QFont, QTextCharFormat, QSyntaxHighlighter
 
+from .theme import Theme
+
 
 class SqlHighlighter(QSyntaxHighlighter):
     """Applies formatting rules to highlight SQL keywords and tokens."""
+
+    COLOR_SCHEMES = {
+        Theme.LIGHT: {
+            "keyword": "#005cc5",
+            "comment": "#6a737d",
+            "string": "#22863a",
+            "number": "#b31d28",
+        },
+        Theme.DARK: {
+            "keyword": "#4fc1ff",
+            "comment": "#6a9955",
+            "string": "#ce9178",
+            "number": "#b5cea8",
+        },
+    }
 
     KEYWORDS = {
         # Read / query
@@ -109,18 +126,14 @@ class SqlHighlighter(QSyntaxHighlighter):
     def __init__(self, document) -> None:
         super().__init__(document)
         self.keyword_format = QTextCharFormat()
-        self.keyword_format.setForeground(QColor("#005cc5"))
         self.keyword_format.setFontWeight(QFont.Weight.Bold)
 
         self.comment_format = QTextCharFormat()
-        self.comment_format.setForeground(QColor("#6a737d"))
         self.comment_format.setFontItalic(True)
 
         self.string_format = QTextCharFormat()
-        self.string_format.setForeground(QColor("#22863a"))
 
         self.number_format = QTextCharFormat()
-        self.number_format.setForeground(QColor("#b31d28"))
 
         self.comment_expression = QRegularExpression(r"--[^\n]*")
         self.string_expression = QRegularExpression(r"'([^']|'')*'")
@@ -129,6 +142,17 @@ class SqlHighlighter(QSyntaxHighlighter):
         pattern_str = r"\b(" + "|".join(self.KEYWORDS) + r")\b"
         self.keyword_pattern = QRegularExpression(pattern_str)
         self.keyword_pattern.setPatternOptions(QRegularExpression.PatternOption.CaseInsensitiveOption)
+        self.set_color_scheme(Theme.LIGHT)
+
+    def set_color_scheme(self, theme: Theme) -> None:
+        """Update token colors for the selected theme."""
+
+        colors = self.COLOR_SCHEMES[theme]
+        self.keyword_format.setForeground(QColor(colors["keyword"]))
+        self.comment_format.setForeground(QColor(colors["comment"]))
+        self.string_format.setForeground(QColor(colors["string"]))
+        self.number_format.setForeground(QColor(colors["number"]))
+        self.rehighlight()
 
     def highlightBlock(self, text: str) -> None:  # noqa: N802 (Qt API signature)
         self._apply_regex(self.keyword_pattern, text, self.keyword_format)

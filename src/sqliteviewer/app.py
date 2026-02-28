@@ -9,6 +9,7 @@ from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication
 
 from .mainwindow import MainWindow
+from .theme import apply_theme, load_theme_preference
 
 
 def run(initial_path: Optional[str] = None) -> int:
@@ -22,6 +23,7 @@ def run(initial_path: Optional[str] = None) -> int:
         app.setOrganizationName("SQLiteView")
         owns_app = True
 
+    apply_theme(load_theme_preference(), app)
     window = MainWindow()
     window.show()
 

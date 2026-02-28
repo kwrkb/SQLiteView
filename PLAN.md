@@ -1,4 +1,4 @@
-# SQLiteView 書き込み対応計画
+# SQLiteView 開発計画
 
 ## Context
 
@@ -83,3 +83,75 @@ SQLiteView は INSERT/UPDATE/DELETE/CREATE/DROP/BEGIN/COMMIT/ROLLBACK 等の書�
   - `build_deb.sh`: `tomllib`（Python 3.11+）→ `grep`/`sed` に置換（Python 3.10互換性復元）
   - `_strip_sql_noise()`: ダブルクォート識別子の除去を追加（セキュリティ強化）
   - エラーパステスト6件追加（空クエリ、無効SQL、未接続操作、存在しないファイル、文字列リテラル内WHERE）
+
+---
+
+## フェーズ2: UI/UX 改善（完了）
+
+### Context
+
+機能は十分だが、UIスタイリングが一切なくシステムネイティブテーマのまま。ダークモード非対応、SQLエディタのフォント未指定、ショートカットも最低限(Ctrl+O/Q のみ)。開発者ツールとしての使い勝手を底上げする。
+
+### 変更対象ファイル
+
+**新規作成:**
+- `src/sqliteviewer/theme.py` — Theme enum, QSS読み込み/適用/永続化 (~60行)
+- `src/sqliteviewer/resources/light.qss` — ライトテーマ QSS (~180行)
+- `src/sqliteviewer/resources/dark.qss` — ダークテーマ QSS (~180行)
+
+**変更:**
+- `src/sqliteviewer/app.py` — 起動時テーマ適用 (+3行)
+- `src/sqliteviewer/mainwindow.py` — View メニュー、テーマ切替、フォント、ショートカット (+~40行)
+- `src/sqliteviewer/sql_highlighter.py` — テーマ連動カラースキーム追加 (+~25行)
+
+### Step 5: テーマ基盤 + ダークモード（完了）
+
+- [x] `theme.py` を作成 — `Theme` enum (LIGHT/DARK)、`load_theme()`/`apply_theme()`/`save_theme_preference()`/`load_theme_preference()`
+  > `StrEnum`(3.11+) → `str, Enum`(3.10+) に修正済み（`requires-python >= 3.10` 互換）
+- [x] `light.qss` を作成 — GitHub風パレット (bg `#ffffff`, fg `#24292e`, accent `#0366d6`)
+  - 対象: QMainWindow, QTableView, QTabWidget, QListWidget, QPlainTextEdit, QTextEdit, QPushButton, QSplitter, QMenuBar, QMenu, QStatusBar, QScrollBar, QHeaderView
+  - ボタン hover/pressed 効果、タブ選択インジケーター、スリムスクロールバー、角丸4px
+- [x] `dark.qss` を作成 — VS Code dark 風パレット (bg `#1e1e1e`, fg `#d4d4d4`, accent `#4fc1ff`)
+- [x] `app.py` を変更 — `window.show()` 前に `apply_theme(load_theme_preference())` を呼ぶ
+- [x] `mainwindow.py` に View メニュー追加 — "Toggle Dark Mode" (Ctrl+D)
+- [x] `sql_highlighter.py` に `set_color_scheme()` 追加 — ライト (GitHub風) / ダーク (VS Code風) の2パレットを切替、`rehighlight()` で即反映
+- [x] `mainwindow.py` でハイライター参照を保持し、テーマ切替時に色同期
+  > テーマ設定は `QSettings("SQLiteViewer", "App")` の `theme` キーへ保存し、起動時に `app.py` で先に適用する。
+
+### Step 6: モノスペースフォント（完了）
+
+- [x] `QFontDatabase.systemFont(SystemFont.FixedFont)` でモノスペースフォント取得、11pt
+- [x] `query_editor` と `schema_view` に適用
+- [x] フォント設定後に `setTabStopDistance` を再計算
+
+### Step 7: キーボードショートカット（完了）
+
+- [x] `Ctrl+Enter` / `F5` — クエリ実行 (`QShortcut` で query_editor にバインド)
+- [x] `Ctrl+R` — テーブルリフレッシュ (View メニューにアクション追加)
+- [x] Run Query ボタンにツールチップ `"Execute SQL (Ctrl+Enter)"` 追加
+
+### 設計判断
+
+- **QSS方式** — QPaletteより柔軟 (hover/角丸/スクロールバー)、外部ライブラリ不要
+- **テーマ2種のみ** — Light/Dark。レジストリパターンは over-engineering
+- **QFontDatabase.systemFont** — フォント名ハードコードより確実なクロスプラットフォーム対応
+- **QShortcut** — eventFilter やサブクラス化より軽量
+
+### 検証方法
+
+```bash
+# 回帰テスト
+uv run python -m pytest tests/ -v
+
+# 手動テスト
+uv run python -m sqliteviewer
+# → View > Toggle Dark Mode で切替確認
+# → SQLエディタがモノスペースフォントか確認
+# → Ctrl+Enter / F5 でクエリ実行確認
+# → Ctrl+R でテーブルリフレッシュ確認
+# → アプリ再起動後にテーマ維持されるか確認
+```
+
+## 現状
+
+フェーズ2まで実装済み。SQLiteView はライト/ダークテーマ切替、固定幅フォントの SQL エディタ/スキーマ表示、`Ctrl+Enter`・`F5`・`Ctrl+R` の操作に対応した。レビューで `StrEnum`(3.11+) の Python 3.10 非互換を検出し `str, Enum` に修正済み。

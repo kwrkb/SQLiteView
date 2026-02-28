@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from PyQt6.QtCore import QSettings, Qt
-from PyQt6.QtGui import QAction, QCloseEvent
+from PyQt6.QtGui import QAction, QCloseEvent, QFontDatabase, QKeySequence, QShortcut
 from PyQt6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -32,6 +32,7 @@ from PyQt6.QtWidgets import (
 from .database import DatabaseError, DatabaseService, QueryResult
 from .resources import load_icon
 from .sql_highlighter import SqlHighlighter
+from .theme import SETTINGS_GROUP, Theme, apply_theme, load_theme_preference, save_theme_preference
 
 
 MAX_RECENT_FILES = 5
@@ -47,8 +48,9 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(load_icon())
 
         self.database_service = DatabaseService()
-        self.settings = QSettings("SQLiteViewer", "App")
+        self.settings = QSettings(*SETTINGS_GROUP)
         self.query_result: Optional[QueryResult] = None
+        self.current_theme = load_theme_preference()
 
         self.table_list = QListWidget()
         self.table_list.itemSelectionChanged.connect(self._on_table_selected)
@@ -64,8 +66,16 @@ class MainWindow(QMainWindow):
 
         self.query_editor = QPlainTextEdit()
         self.query_editor.setPlaceholderText("Write a SQL statement…")
-        self.query_editor.setTabStopDistance(4 * self.query_editor.fontMetrics().horizontalAdvance(' '))
-        SqlHighlighter(self.query_editor.document())
+        self.highlighter = SqlHighlighter(self.query_editor.document())
+        self.highlighter.set_color_scheme(self.current_theme)
+
+        fixed_font = QFontDatabase.systemFont(QFontDatabase.SystemFont.FixedFont)
+        fixed_font.setPointSize(11)
+        self.query_editor.setFont(fixed_font)
+        self.schema_view.setFont(fixed_font)
+        tab_stop = 4 * self.query_editor.fontMetrics().horizontalAdvance(" ")
+        self.query_editor.setTabStopDistance(tab_stop)
+        self.schema_view.setTabStopDistance(tab_stop)
 
         self.query_result_view = QTableView()
         self.query_result_view.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
@@ -117,11 +127,12 @@ class MainWindow(QMainWindow):
         query_layout.addWidget(self.query_editor)
 
         button_bar = QHBoxLayout()
-        run_button = QPushButton("Run Query")
-        run_button.clicked.connect(self._run_query)
+        self.run_button = QPushButton("Run Query")
+        self.run_button.setToolTip("Execute SQL (Ctrl+Enter)")
+        self.run_button.clicked.connect(self._run_query)
         export_button = QPushButton("Export Results")
         export_button.clicked.connect(self._export_results)
-        button_bar.addWidget(run_button)
+        button_bar.addWidget(self.run_button)
         button_bar.addWidget(export_button)
         button_bar.addStretch(1)
         query_layout.addLayout(button_bar)
@@ -159,15 +170,45 @@ class MainWindow(QMainWindow):
         exit_action.triggered.connect(QApplication.instance().quit)
         file_menu.addAction(exit_action)
 
+        view_menu = menubar.addMenu("&View")
+
+        self.toggle_dark_mode_action = QAction("Toggle Dark Mode", self)
+        self.toggle_dark_mode_action.setShortcut("Ctrl+D")
+        self.toggle_dark_mode_action.setCheckable(True)
+        self.toggle_dark_mode_action.setChecked(self.current_theme == Theme.DARK)
+        self.toggle_dark_mode_action.toggled.connect(self._toggle_dark_mode)
+        view_menu.addAction(self.toggle_dark_mode_action)
+
+        refresh_action = QAction("Refresh Tables", self)
+        refresh_action.setShortcut("Ctrl+R")
+        refresh_action.triggered.connect(self._refresh_tables)
+        view_menu.addAction(refresh_action)
+
         help_menu = menubar.addMenu("&Help")
         about_action = QAction("About", self)
         about_action.triggered.connect(self._show_about_dialog)
         help_menu.addAction(about_action)
 
+        self._install_shortcuts()
+
+    def _install_shortcuts(self) -> None:
+        for shortcut_key in ("Ctrl+Return", "Ctrl+Enter", "F5"):
+            shortcut = QShortcut(QKeySequence(shortcut_key), self.query_editor)
+            shortcut.activated.connect(self._run_query)
+
     def _open_dialog(self) -> None:
         path, _ = QFileDialog.getOpenFileName(self, "Open SQLite Database", str(Path.home()), "SQLite Database (*.db *.sqlite *.sqlite3);;All Files (*)")
         if path:
             self.open_database(path)
+
+    def _toggle_dark_mode(self, checked: bool) -> None:
+        self._set_theme(Theme.DARK if checked else Theme.LIGHT)
+
+    def _set_theme(self, theme: Theme) -> None:
+        self.current_theme = theme
+        apply_theme(theme)
+        save_theme_preference(theme)
+        self.highlighter.set_color_scheme(theme)
 
     def open_database(self, path: str) -> None:
         try:
