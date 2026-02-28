@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=SQLite Viewer
 Comment=Browse and query SQLite databases
-Exec=sqliteviewer %f
+Exec=sqliteview %f
 Icon=sqliteviewer
 Terminal=false
 Type=Application

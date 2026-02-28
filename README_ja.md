@@ -8,6 +8,11 @@
 
 - ページネーション付きでテーブルを閲覧し、行データを表示
 - シンタックスハイライトとCSVエクスポート機能を備えたカスタムSQLクエリの実行
+- 書き込み操作（INSERT, UPDATE, DELETE）およびDDL（CREATE, DROP, ALTER）の実行
+- 破壊的クエリの安全確認ダイアログ
+- ライト/ダークテーマの切替（Ctrl+D）と設定の永続化
+- SQLエディタ・スキーマ表示のモノスペースフォント
+- キーボードショートカット: Ctrl+Enter / F5（クエリ実行）、Ctrl+R（テーブルリフレッシュ）
 - テーブルスキーマのメタデータを表示
 - 素早いアクセスのための最近使用したファイル一覧の永続化
 - Ubuntu用のDebianパッケージビルダー（Python依存バンドル）
@@ -89,12 +94,12 @@ sqliteview /path/to/database.sqlite
 ## テストの実行
 
 ```bash
-pytest
+uv run python -m pytest tests/ -v
 ```
 
 ## パッケージング
 
-- wheel + sdist のビルド: `python -m build`
+- wheel + sdist のビルド: `uv run python -m build`
 - Debian パッケージのビルド: `./scripts/build_deb.sh`
 - 生成されたパッケージは `dist/` に配置されます
 

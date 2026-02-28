@@ -39,8 +39,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://example.com/sqliteviewer"
-Repository = "https://example.com/sqliteviewer/repo"
+Homepage = "https://github.com/kwrkb/SQLiteView"
+Repository = "https://github.com/kwrkb/SQLiteView"
 
 [project.scripts]
 sqliteview = "sqliteviewer.__main__:main"

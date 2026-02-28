@@ -9,10 +9,19 @@
    - Implements the main window, table browser, query editor, and result views using PyQt6 widgets.
    - Separates UI widgets from data access via signal/slot connections.
 3. **Data access layer (`sqliteviewer.database`)**
-   - Provides `DatabaseService` for opening SQLite files, listing tables, describing schemas, executing queries, and streaming rows.
+   - Provides `DatabaseService` for opening SQLite files, listing tables, describing schemas, executing queries (read and write), and streaming rows.
+   - Supports DML (INSERT/UPDATE/DELETE), DDL (CREATE/DROP/ALTER), and TCL (BEGIN/COMMIT/ROLLBACK).
+   - Includes query classification (`classify_query`) and destructive operation detection (`is_destructive_query`) with SQL noise stripping for safe keyword matching.
    - Includes pragmatic safeguards (e.g., limiting returned rows) to keep the UI responsive.
-4. **Utility module (`sqliteviewer.resources`)**
+4. **Theme system (`sqliteviewer.theme`)**
+   - Manages light/dark theme switching via QSS stylesheets.
+   - Persists user preference via `QSettings`.
+5. **SQL syntax highlighter (`sqliteviewer.sql_highlighter`)**
+   - Provides real-time syntax highlighting for the query editor.
+   - Supports theme-aware color schemes (light/dark).
+6. **Utility module (`sqliteviewer.resources`)**
    - Manages application metadata, version, and icon loading.
+   - Includes QSS theme files (`light.qss`, `dark.qss`) and desktop integration assets.
 
 ## Data flow
 
@@ -24,8 +33,8 @@ Results are translated into Qt models (`QStandardItemModel`) before reaching the
 
 ## Packaging & distribution
 
-- Python packaging via `pyproject.toml` (setuptools backend).
-- CLI/desktop entry point exposed as `sqliteviewer` console script.
+- Python packaging via `pyproject.toml` (hatchling backend).
+- CLI/desktop entry point exposed as `sqliteview` console script.
 - Debian packaging script (`scripts/build_deb.sh`) leverages `python -m build` and `dpkg-deb` to produce `.deb` including bundled dependencies.
 - Desktop integration provides `.desktop` launcher and application icon installed by the Debian package.
 
