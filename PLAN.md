@@ -17,8 +17,9 @@ SQLiteViewは現在、読み取り専用のSQLiteビューア（SELECT/WITH/PRAG
 ### Step 1: database.py — DB層の変更（完了）
 
 - [x] `QueryResult` に `affected_rows: Optional[int]` と `is_write_operation: bool` を追加
-- [x] `_classify_query()` を追加 — `read`/`dml`/`ddl`/`tcl`/`unknown` を返す
+- [x] `classify_query()` を追加 — `read`/`dml`/`ddl`/`tcl`/`unknown` を返す（公開メソッド）
 - [x] `is_destructive_query()` を追加 — DROP・WHERE無しDELETEを検出し `(bool, reason)` を返す
+- [x] `_strip_sql_comments()` を追加 — `--` / `/* */` コメントを除去（WHERE句バイパス防止）
 - [x] `execute_query()` を書き換え — `_assert_read_only()` 削除、`cursor.description is None` で書き込み判定
 - [x] `_assert_read_only()` を削除
 - [x] docstring `"read-only SQLite interactions"` → `"SQLite database interactions"` に更新
@@ -32,7 +33,7 @@ SQLiteViewは現在、読み取り専用のSQLiteビューア（SELECT/WITH/PRAG
 - [x] DELETE のテストを追加
 - [x] DDL（CREATE TABLE / DROP TABLE）のテストを追加
 - [x] トランザクション（BEGIN→INSERT→ROLLBACK）のテストを追加
-- [x] クエリ分類（`_classify_query`）のテストを追加
+- [x] クエリ分類（`classify_query`）のテストを追加
 - [x] 破壊的操作検出（`is_destructive_query`）のテストを追加
 
 > 10テストすべて pass 確認済み。
@@ -51,6 +52,7 @@ SQLiteViewは現在、読み取り専用のSQLiteビューア（SELECT/WITH/PRAG
 - [x] `_run_query()` を書き換え — 破壊的クエリの確認ダイアログ（`QMessageBox.warning`）追加
 - [x] 書き込み結果の表示: `"{N} row(s) affected"` または `"Statement executed successfully"`
 - [x] `_refresh_after_write()` を追加 — DDL後はテーブルリスト・プレビュー・スキーマをリフレッシュ、DML後は選択中テーブルのプレビューをリフレッシュ
+- [x] write操作後に `self.query_result = None` をリセット — 古いSELECT結果が誤ってExportされる問題を修正
 - [x] `_refresh_tables()` を改善 — リフレッシュ後に以前の選択テーブルを復元
 - [x] About ダイアログのバージョンを `0.1.0` → `0.2.1` に修正
 
@@ -67,5 +69,9 @@ uv run sqliteview test.db
 
 ## 現状
 
-**実装完了。** 全ステップの実装・テストが完了しており、10テストすべて pass。
+**実装完了・マージ済み。** 全ステップの実装・テストが完了しており、10テストすべて pass。
 SQLiteView は INSERT/UPDATE/DELETE/CREATE/DROP/BEGIN/COMMIT/ROLLBACK 等の書き込みクエリを実行可能な SQL クライアントとなった。
+
+PR #3 にてレビュー指摘対応・CIエラー修正を行い、main ブランチへのマージ完了（2026-02-27）。
+- `scripts/build_deb.sh` のパッケージ名・バージョンを修正（CIエラー解消）
+- WHERE句チェックのSQLコメントバイパスを修正（セキュリティ）
