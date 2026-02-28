@@ -8,6 +8,11 @@ A lightweight, cross-platform PyQt6 desktop SQLite database viewer. The app lets
 
 - Browse tables and view row data with pagination
 - Run custom SQL queries with syntax highlighting and CSV export
+- Execute write operations (INSERT, UPDATE, DELETE) and DDL (CREATE, DROP, ALTER)
+- Destructive query confirmation dialog for safety
+- Light/Dark theme switching (Ctrl+D) with persistent preference
+- Monospace font in SQL editor and schema view
+- Keyboard shortcuts: Ctrl+Enter / F5 (run query), Ctrl+R (refresh tables)
 - Display table schema metadata
 - Persistent recent files list for quick access
 - Debian package builder for Ubuntu (Python-dependent bundle)
@@ -89,12 +94,12 @@ sqliteview /path/to/database.sqlite
 ## Running Tests
 
 ```bash
-pytest
+uv run python -m pytest tests/ -v
 ```
 
 ## Packaging
 
-- Build wheel + sdist: `python -m build`
+- Build wheel + sdist: `uv run python -m build`
 - Build Debian package: `./scripts/build_deb.sh`
 - Generated packages are placed in `dist/`
 
