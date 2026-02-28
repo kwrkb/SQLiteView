@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 BUILD_DIR="$DIST_DIR/deb_build"
 PACKAGE="sqliteview"
-VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('$ROOT_DIR/pyproject.toml','rb'))['project']['version'])")
+VERSION=$(grep -m1 '^version' "$ROOT_DIR/pyproject.toml" | sed 's/.*"\(.*\)"/\1/')
 ARCH="all"
 
 rm -rf "$BUILD_DIR"

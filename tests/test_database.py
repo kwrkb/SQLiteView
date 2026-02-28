@@ -162,6 +162,17 @@ class DatabaseServiceTests(unittest.TestCase):
         is_d, _ = self.service.is_destructive_query(sql_literal_only)
         self.assertFalse(is_d)
 
+    def test_is_destructive_with_where_in_double_quoted_identifier(self) -> None:
+        # "WHERE" as a column name in double-quoted identifier should be stripped
+        sql = 'DELETE FROM users WHERE "WHERE" = 1'
+        is_d, _ = self.service.is_destructive_query(sql)
+        self.assertFalse(is_d)
+
+        # WHERE only inside double-quoted identifier — no real WHERE clause
+        sql_no_where = 'DELETE FROM "WHERE"'
+        is_d, _ = self.service.is_destructive_query(sql_no_where)
+        self.assertTrue(is_d)
+
 
 if __name__ == "__main__":
     unittest.main()

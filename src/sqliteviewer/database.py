@@ -188,13 +188,14 @@ class DatabaseService:
             elif sql[i] == '/' and i + 1 < length and sql[i + 1] == '*':
                 end = sql.find('*/', i + 2)
                 i = length if end == -1 else end + 2
-            elif sql[i] == "'":
+            elif sql[i] in ("'", '"'):
+                quote = sql[i]
                 i += 1
                 while i < length:
-                    if sql[i] == "'" and (i + 1 >= length or sql[i + 1] != "'"):
+                    if sql[i] == quote and (i + 1 >= length or sql[i + 1] != quote):
                         i += 1
                         break
-                    if sql[i] == "'" and i + 1 < length and sql[i + 1] == "'":
+                    if sql[i] == quote and i + 1 < length and sql[i + 1] == quote:
                         i += 2
                     else:
                         i += 1
