@@ -84,6 +84,12 @@ SQLiteView は INSERT/UPDATE/DELETE/CREATE/DROP/BEGIN/COMMIT/ROLLBACK 等の書�
   - `_strip_sql_noise()`: ダブルクォート識別子の除去を追加（セキュリティ強化）
   - エラーパステスト6件追加（空クエリ、無効SQL、未接続操作、存在しないファイル、文字列リテラル内WHERE）
 
+**PR #5: UI/UX改善（ダークモード・モノスペースフォント・ショートカット）** — マージ完了（2026-02-28）
+- フェーズ2全タスク実装
+- PRレビュー対応:
+  - `_SETTINGS_GROUP` → `SETTINGS_GROUP` に公開化し、`theme.py` と `mainwindow.py` で定数共有
+  - ショートカットコンテキスト変更提案はスキップ（SQL IDE標準のWindowShortcut維持）
+
 ---
 
 ## フェーズ2: UI/UX 改善（完了）
@@ -116,7 +122,7 @@ SQLiteView は INSERT/UPDATE/DELETE/CREATE/DROP/BEGIN/COMMIT/ROLLBACK 等の書�
 - [x] `mainwindow.py` に View メニュー追加 — "Toggle Dark Mode" (Ctrl+D)
 - [x] `sql_highlighter.py` に `set_color_scheme()` 追加 — ライト (GitHub風) / ダーク (VS Code風) の2パレットを切替、`rehighlight()` で即反映
 - [x] `mainwindow.py` でハイライター参照を保持し、テーマ切替時に色同期
-  > テーマ設定は `QSettings("SQLiteViewer", "App")` の `theme` キーへ保存し、起動時に `app.py` で先に適用する。
+  > テーマ設定は `QSettings(*SETTINGS_GROUP)` の `theme` キーへ保存し、起動時に `app.py` で先に適用する。`SETTINGS_GROUP` は `theme.py` で定義し `mainwindow.py` からインポート。
 
 ### Step 6: モノスペースフォント（完了）
 
@@ -154,4 +160,4 @@ uv run python -m sqliteviewer
 
 ## 現状
 
-フェーズ2まで実装済み。SQLiteView はライト/ダークテーマ切替、固定幅フォントの SQL エディタ/スキーマ表示、`Ctrl+Enter`・`F5`・`Ctrl+R` の操作に対応した。レビューで `StrEnum`(3.11+) の Python 3.10 非互換を検出し `str, Enum` に修正済み。
+フェーズ2まで実装・マージ済み（PR #5）。SQLiteView はライト/ダークテーマ切替、固定幅フォントの SQL エディタ/スキーマ表示、`Ctrl+Enter`・`F5`・`Ctrl+R` の操作に対応した。レビューで `StrEnum`(3.11+) の Python 3.10 非互換を検出し `str, Enum` に修正、`QSettings` グループの定数共有化も対応済み。
