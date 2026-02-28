@@ -127,6 +127,41 @@ class DatabaseServiceTests(unittest.TestCase):
         self.assertIn("CREATE TABLE", schema)
         self.assertIn("users", schema)
 
+    def test_execute_query_empty_raises(self) -> None:
+        with self.assertRaises(DatabaseError):
+            self.service.execute_query("")
+
+    def test_execute_query_invalid_sql_raises(self) -> None:
+        with self.assertRaises(DatabaseError):
+            self.service.execute_query("NOT VALID SQL !!!")
+
+    def test_operations_without_open_raises(self) -> None:
+        svc = DatabaseService()
+        with self.assertRaises(DatabaseError):
+            svc.list_tables()
+        with self.assertRaises(DatabaseError):
+            svc.get_table_preview("users")
+        with self.assertRaises(DatabaseError):
+            svc.execute_query("SELECT 1")
+
+    def test_open_nonexistent_file_raises(self) -> None:
+        svc = DatabaseService()
+        with self.assertRaises(DatabaseError):
+            svc.open("/tmp/nonexistent_db_file_12345.db")
+
+    def test_is_destructive_with_where_in_string_literal(self) -> None:
+        sql = "DELETE FROM users WHERE name = 'WHERE'"
+        is_d, _ = self.service.is_destructive_query(sql)
+        self.assertFalse(is_d)
+
+        sql_no_where = "DELETE FROM users -- WHERE\n"
+        is_d, _ = self.service.is_destructive_query(sql_no_where)
+        self.assertTrue(is_d)
+
+        sql_literal_only = "DELETE FROM users WHERE name = 'test'"
+        is_d, _ = self.service.is_destructive_query(sql_literal_only)
+        self.assertFalse(is_d)
+
 
 if __name__ == "__main__":
     unittest.main()

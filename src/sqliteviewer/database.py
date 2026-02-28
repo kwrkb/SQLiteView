@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence, Tuple
 
@@ -170,13 +170,13 @@ class DatabaseService:
         if keyword == "DROP":
             return True, "This will permanently drop the object."
         if keyword == "DELETE":
-            stripped = self._strip_sql_comments(sql).upper()
+            stripped = self._strip_sql_noise(sql).upper()
             if "WHERE" not in stripped:
                 return True, "DELETE without WHERE will remove all rows."
         return False, ""
 
-    def _strip_sql_comments(self, sql: str) -> str:
-        """Remove SQL comments (-- and /* */) from a statement."""
+    def _strip_sql_noise(self, sql: str) -> str:
+        """Remove SQL comments and string literals from a statement."""
 
         result = []
         i = 0
@@ -189,15 +189,12 @@ class DatabaseService:
                 end = sql.find('*/', i + 2)
                 i = length if end == -1 else end + 2
             elif sql[i] == "'":
-                result.append(sql[i])
                 i += 1
                 while i < length:
-                    result.append(sql[i])
                     if sql[i] == "'" and (i + 1 >= length or sql[i + 1] != "'"):
                         i += 1
                         break
                     if sql[i] == "'" and i + 1 < length and sql[i + 1] == "'":
-                        result.append(sql[i + 1])
                         i += 2
                     else:
                         i += 1
